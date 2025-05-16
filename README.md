@@ -37,6 +37,8 @@ This project demonstrates the integration of Semantic Kernel with Model Context 
    - Specify the path to the MCP server executable in the `ExecutablePath` field under `McpOfficeInfoServer`.
 4. Build and run the project using your preferred IDE or the .NET CLI.
 
+---
+
 ### McpOfficeInfoServer
 
 This project serves as the backend server providing office information for the client application.
@@ -44,6 +46,8 @@ This project serves as the backend server providing office information for the c
 #### How to Run
 1. Navigate to the `McpOfficeInfoServer` directory.
 2. Build and run the project using your preferred IDE or the .NET CLI.
+
+---
 
 ### SkDemo
 
@@ -55,6 +59,8 @@ This project demonstrates the use of Semantic Kernel for various AI-driven tasks
    - Rename `appsettings.Development.template.json` to `appsettings.Development.json` if not already done.
    - Add your Azure OpenAI settings (`Endpoint`, `Key`, `Deployment`, and `ModelId`).
 3. Build and run the project using your preferred IDE or the .NET CLI.
+
+---
 
 ### SkDemoInquiry
 
