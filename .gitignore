@@ -1,0 +1,25 @@
+# Ignore build output
+bin/
+obj/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs
+*.log
+
+# Configuration files
+appsettings.Development.json
+
+# Other
+.vscode/
+.idea/
+*.tmp
+*.bak
+*.swp
+*.DS_Store
+Thumbs.db
