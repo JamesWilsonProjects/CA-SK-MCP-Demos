@@ -17,6 +17,7 @@ var config = new ConfigurationBuilder()
 string endpoint = config["AzureOpenAI:Endpoint"]!;
 string apiKey = config["AzureOpenAI:Key"]!;
 string chatDeployment = config["AzureOpenAI:Deployment"]!;
+string serverExePath = config["McpOfficeInfoServer:ExecutablePath"]!;
 
 //  Builder + LLM
 var builder = Kernel.CreateBuilder()
@@ -32,7 +33,6 @@ var kernel = builder
 ChatHistory chatHistory = [];
 IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
-string serverExePath = @"C:\Users\jamwilson\Documents\Projects\Demos\State of California - Demos\McpOfficeInfoServer\bin\Debug\net8.0\McpOfficeInfoServer.exe";
 // Create an MCP client to connect to the server (e.g., launching a local MCP server process)
 var mcpClient = await McpClientFactory.CreateAsync(
     new StdioClientTransport(new()
