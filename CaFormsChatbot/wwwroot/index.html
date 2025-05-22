@@ -1,14 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8"/>
+  <meta charset="utf-8" />
   <title>Agent Code-Interpreter Chat</title>
   <style>
-    body { font-family: sans-serif; background:#f7f7f7; margin:0 }
-    #chat { max-width:600px; margin:2rem auto; overflow-y:auto; height:80vh; padding:0 1rem }
-    .msg { padding:0.75rem; border-radius:8px; margin:0.5rem 0; max-width:80%; word-wrap:break-word }
-    .user{ background:#d0f0fd; margin-left:auto; text-align:right }
-    .bot { background:#fff;             text-align:left }
+    body {
+      font-family: sans-serif;
+      background: #f7f7f7;
+      margin: 0
+    }
+
+    #chat {
+      max-width: 600px;
+      margin: 2rem auto;
+      overflow-y: auto;
+      height: 80vh;
+      padding: 0 1rem
+    }
+
+    .msg {
+      padding: 0.75rem;
+      border-radius: 8px;
+      margin: 0.5rem 0;
+      max-width: 80%;
+      word-wrap: break-word
+    }
+
+    .user {
+      background: #d0f0fd;
+      margin-left: auto;
+      text-align: right
+    }
+
+    .bot {
+      background: #fff;
+      text-align: left
+    }
+
     #loader {
       border: 4px solid #f3f3f3;
       border-top: 4px solid #0078d4;
@@ -19,54 +48,130 @@
       display: none;
       margin: 1rem auto;
     }
+
     @keyframes spin {
-      0%   { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
-    #bar{ display:flex; gap:0.5rem; padding:1rem; background:#fff; position:fixed; bottom:0; left:0; right:0; max-width:600px; margin:0 auto }
-    #bar input{ flex:1; padding:0.5rem; border:1px solid #ccc; border-radius:4px }
-    #bar button{ padding:0.5rem 1rem; background:#0078d4; color:#fff; border:none; border-radius:4px; cursor:pointer }
-    #bar button:disabled{ background:#aaa; cursor:default }
+
+    #bar {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: #fff;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-width: 600px;
+      margin: 0 auto
+    }
+
+    #bar input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px
+    }
+
+    #bar button {
+      padding: 0.5rem 1rem;
+      background: #0078d4;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer
+    }
+
+    #bar button:disabled {
+      background: #aaa;
+      cursor: default
+    }
   </style>
 </head>
+
 <body>
   <div id="chat"></div>
   <div id="loader" class="loader"></div>
   <div id="bar">
-    <input id="question" placeholder="Type your question..."/>
+    <input id="question" placeholder="Type your question..." />
     <button id="send">Send</button>
   </div>
   <script>
     let threadId = null;
-    const chat   = document.getElementById("chat");
+    const chat = document.getElementById("chat");
     const loader = document.getElementById("loader");
-    const input  = document.getElementById("question");
-    const send   = document.getElementById("send");
+    const input = document.getElementById("question");
+    const send = document.getElementById("send");
 
-    send.onclick = async () => {
+    // Remove Foundry citation tokens like 
+    function stripSources(text) {
+      return text.replace(/【.*?†source】/g, "");
+    }
+
+    // Convert Markdown links [label](url) into <a> tags
+    function parseMarkdownLinks(text) {
+      return text.replace(
+        /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+        (match, label, url) =>
+          `<a href="${url}" target="_blank" rel="noopener">${label}</a>`
+      );
+    }
+
+    // Shared send function
+    async function doSend() {
       const q = input.value.trim();
       if (!q) return;
-      // Show user message
       chat.innerHTML += `<div class="msg user">${q}</div>`;
       input.value = "";
       send.disabled = true;
-      // Show spinner
       loader.style.display = "block";
-      // Fetch agent response
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q, threadId })
-      });
-      // Hide spinner
+
+      let res;
+      try {
+        res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: q, threadId })
+        });
+      } catch (e) {
+        loader.style.display = "none";
+        send.disabled = false;
+        chat.innerHTML += `<div class="msg bot">⚠️ Network error: ${e.message}</div>`;
+        return;
+      }
+
       loader.style.display = "none";
       send.disabled = false;
-      // Process reply
+
       const { reply, threadId: tid } = await res.json();
       threadId = tid;
-      chat.innerHTML += `<div class="msg bot">${reply.replace(/\n/g,"<br>")}</div>`;
+
+      // Clean up the reply: strip citations, parse links, then line breaks
+      let clean = stripSources(reply);
+      clean = parseMarkdownLinks(clean);
+      clean = clean.replace(/\n/g, "<br>");
+
+      chat.innerHTML += `<div class="msg bot">${clean}</div>`;
       chat.scrollTop = chat.scrollHeight;
-    };
+    }
+
+    // Click handler
+    send.addEventListener("click", doSend);
+
+    // Enter key handler on input
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();  // prevent newline
+        doSend();
+      }
+    });
   </script>
 </body>
+
 </html>

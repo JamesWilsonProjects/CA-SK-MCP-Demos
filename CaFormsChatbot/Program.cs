@@ -16,19 +16,42 @@ IConfigurationRoot configuration = new ConfigurationBuilder()
 
 var projectEndpoint     = configuration["ProjectEndpoint"]!;
 var modelDeploymentName = configuration["ModelDeploymentName"]!;
+var bingConnectionId    = configuration["BingConnectionId"]!;
 
 // 2. Create the client exactly as in quickstart
 PersistentAgentsClient client = new(projectEndpoint, new DefaultAzureCredential());
 
-// 3. Provision the agent (console snippet verbatim)
-PersistentAgent agent = client.Administration.CreateAgent(
-    model:        modelDeploymentName,
-    name:         "My Test Agent",
-    instructions: "You politely help with math questions. Use the code interpreter tool when asked to visualize numbers.",
-    tools:        new[] { new CodeInterpreterToolDefinition() }
+// 3. Define Bing grounding tool
+var bingTool = new BingGroundingToolDefinition(
+    new BingGroundingSearchToolParameters(
+        new[]
+        {
+            new BingGroundingSearchConfiguration(bingConnectionId)
+        }
+    )
 );
 
-// 4. *** Create the thread once at startup ***
+// 4. Provision the agent
+PersistentAgent agent = client.Administration.CreateAgent(
+    model:        modelDeploymentName,
+    name:         "CA Services Bot",
+    instructions: @"
+        You are a California services assistant with direct access to live web search.
+        For any user question, immediately perform a Bing grounding search restricted to site:ca.gov,
+        then return up to 3 official CA.gov URLs (preferably under /departments/.../services/...) 
+        each with a one‐sentence summary. Do **not** ask the user to wait.",
+    tools: new ToolDefinition[]
+    {
+        new BingGroundingToolDefinition(
+            new BingGroundingSearchToolParameters(
+                new[] { new BingGroundingSearchConfiguration(bingConnectionId) }
+            )
+        )
+    }
+);
+
+
+// 5. Create the thread once at startup
 PersistentAgentThread thread = client.Threads.CreateThread();
 
 Console.WriteLine($"Agent ID: {agent.Id}");
@@ -38,7 +61,7 @@ var app = builder.Build();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-// 5. Cleanup: delete agent on shutdown
+// 6. Cleanup: delete agent on shutdown
 app.Lifetime.ApplicationStopping.Register(() =>
 {
     Console.WriteLine("🗑 Deleting agent...");
@@ -53,53 +76,71 @@ app.Lifetime.ApplicationStopping.Register(() =>
     }
 });
 
-// 6. Chat endpoint — only the question is passed in
+// 7. Chat endpoint
 app.MapPost("/api/chat", (ChatRequest req) =>
 {
-    // 6a. Post the user’s question
-    client.Messages.CreateMessage(
-        thread.Id,
-        MessageRole.User,
-        req.Question
-    );
-
-    // 6b. Invoke the agent (verbatim from snippet)
-    ThreadRun run = client.Runs.CreateRun(
-        thread.Id,
-        agent.Id,
-        additionalInstructions: "Please address the user as Jane Doe. The user has a premium account."
-    );
-
-    // 6c. Poll for completion
-    do
+    try
     {
-        Thread.Sleep(TimeSpan.FromMilliseconds(500));
-        run = client.Runs.GetRun(thread.Id, run.Id);
+        Console.WriteLine($"[Chat] Received question: {req.Question}");
+
+        // Post the user's message
+        client.Messages.CreateMessage(thread.Id, MessageRole.User, req.Question);
+
+        // Invoke the agent run
+        ThreadRun run = client.Runs.CreateRun(
+            thread.Id,
+            agent.Id,
+            additionalInstructions: "Please address the user as if you were a public servant. The user has a premium account."
+        );
+        Console.WriteLine($"[Chat] Run started: ID={run.Id}, status={run.Status}");
+
+        // Poll until completion or failure
+        do
+        {
+            Thread.Sleep(500);
+            run = client.Runs.GetRun(thread.Id, run.Id);
+            Console.WriteLine($"[Chat] Polling: status={run.Status}");
+        }
+        while (run.Status == RunStatus.Queued
+            || run.Status == RunStatus.InProgress
+            || run.Status == RunStatus.RequiresAction
+        );
+
+        // Handle failure
+        if (run.Status == RunStatus.Failed)
+        {
+            var error = run.LastError?.Message ?? "Unknown error";
+            Console.Error.WriteLine($"[Chat] Run failed: {error}");
+            return Results.Json(new ChatResponse($"⚠️ Agent run failed: {error}"));
+        }
+
+        // Fetch all messages in the thread
+        var messages = client.Messages.GetMessages(thread.Id);
+
+        // Extract only the last agent text response
+        var agentTexts = messages
+            .Where(m => m.Role == MessageRole.Agent)
+            .SelectMany(m => m.ContentItems)
+            .OfType<MessageTextContent>()
+            .Select(t => t.Text)
+            .ToList();
+
+        string reply = agentTexts.Any()
+            ? agentTexts.Last()
+            : "⚠️ No response from agent.";
+
+        Console.WriteLine($"[Chat] Sending reply: {reply}");
+        return Results.Json(new ChatResponse(reply));
     }
-    while (run.Status == RunStatus.Queued
-        || run.Status == RunStatus.InProgress
-        || run.Status == RunStatus.RequiresAction
-    );
-
-    // 6d. Fetch all messages (text & images) exactly as snippet does
-    Pageable<PersistentThreadMessage> messages = client.Messages.GetMessages(
-        threadId: thread.Id,
-        order:    ListSortOrder.Ascending
-    );
-
-    // 6e. Collect only the text bits into one string for the web UI
-    string reply = string.Join("\n", messages
-        .SelectMany(m => m.ContentItems)
-        .OfType<MessageTextContent>()
-        .Select(t => t.Text)
-    );
-
-    return Results.Json(new ChatResponse(reply));
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"[Chat] ERROR: {ex}");
+        return Results.Json(new ChatResponse($"⚠️ Error: {ex.Message}"));
+    }
 });
 
 app.Run();
 
-// ─── DTO ─────────────────────────────────────────────────────────
-
+// DTOs
 public record ChatRequest(string Question);
 public record ChatResponse(string Reply);
