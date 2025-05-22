@@ -14,17 +14,17 @@ string apiKey = config["AzureOpenAI:Key"]!;
 string chatDeployment = config["AzureOpenAI:Deployment"]!;
 
 
-// 1️⃣  Builder + LLM
+// 1. Builder + LLM
 var builder = Kernel.CreateBuilder()
     .AddAzureOpenAIChatCompletion(
         chatDeployment,
         endpoint,
         apiKey);
 
-// 2️⃣  Build kernel
+// 2. Build kernel
 var kernel = builder.Build();
 
-// 3️⃣  Register plugins (pass config values as needed)
+// 3. Register plugins
 kernel.Plugins.AddFromType<AdvicePlugin>();
 kernel.Plugins.AddFromType<TodoPlugin>();
 kernel.Plugins.AddFromType<HolidayPlugin>();
@@ -37,7 +37,7 @@ call IsPublicHoliday; if a todo, call AddTask.
 """;
 
 
-// 4️⃣  Chat loop
+// 4. Chat loop
 while (true)
 {
     Console.Write("You: ");

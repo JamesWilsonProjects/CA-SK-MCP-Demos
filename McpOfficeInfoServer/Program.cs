@@ -32,6 +32,14 @@ public static class OfficeInfoTools
         return $"User asked about '{officeName}' office info. This office is open from 9 AM to 5 PM, located at 123 Main St, and speaks English and Spanish. It is handicap accessible. For more details, please visit our website.";
     }
 
+    [McpServerTool, Description("Returns information about state offices including office hours, locations, languages spoken, and handicap access.")]
+    public static string GetOfficeManagerByLocation(string officeLocation)
+    {
+        // In a real scenario, this could save to a database or route to a department.
+        Console.WriteLine($"[Server] Inquiry received. Location = {officeLocation}");
+        return $"User asked about '{officeLocation}' office manager. This office is managed by John Doe, who is available from 9 AM to 5 PM and can be reached at (555) 123-4567. For more details, please visit our website.";
+    }
+
     // (Optional) Additional tools for demo, e.g., a basic echo:
     [McpServerTool, Description("Echoes the message back to the client.")]
     public static string Echo(string message) => $"Echo: {message}";

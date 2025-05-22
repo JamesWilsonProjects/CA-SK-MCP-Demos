@@ -30,6 +30,7 @@ Citizen Inquiry: {{$inquiry}}
 
 Intent:";
 
+// This is our semantic function
 var getIntentFunction = kernel.CreateFunctionFromPrompt(
     promptTemplate, 
     executionSettings: new OpenAIPromptExecutionSettings { MaxTokens = 100 });

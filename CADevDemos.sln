@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McpOfficeInfoServer", "McpO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McpOfficeInfoClient", "McpOfficeInfoClient\McpOfficeInfoClient.csproj", "{00369517-0385-4FB8-803E-67B277762073}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaFormsAgentProvisioner", "CaFormsAgentProvisioner\CaFormsAgentProvisioner.csproj", "{64856CEF-C236-4C66-BB46-FA92DE659708}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{00369517-0385-4FB8-803E-67B277762073}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00369517-0385-4FB8-803E-67B277762073}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00369517-0385-4FB8-803E-67B277762073}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64856CEF-C236-4C66-BB46-FA92DE659708}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64856CEF-C236-4C66-BB46-FA92DE659708}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64856CEF-C236-4C66-BB46-FA92DE659708}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64856CEF-C236-4C66-BB46-FA92DE659708}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
