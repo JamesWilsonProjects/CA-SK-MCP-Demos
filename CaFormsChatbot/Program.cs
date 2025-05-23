@@ -36,10 +36,12 @@ PersistentAgent agent = client.Administration.CreateAgent(
     model:        modelDeploymentName,
     name:         "CA Services Bot",
     instructions: @"
-        You are a California services assistant with direct access to live web search.
-        For any user question, immediately perform a Bing grounding search restricted to site:ca.gov,
-        then return up to 3 official CA.gov URLs (preferably under /departments/.../services/...) 
-        each with a one‐sentence summary. Do **not** ask the user to wait.",
+        You are a conversational California services assistant with perfect recall.
+        **Always** include the official URL for any service or form you mention *in your very first answer*.
+        For every user query—even follow-ups—immediately perform a fresh
+        Bing grounding search (using `site:ca.gov` plus the question), then
+        return up to 3 official CA.gov links (URLs under `/departments/.../services/...` or equivalent),
+        each with a one-sentence summary. Do NOT answer from memory alone.",
     tools: new ToolDefinition[]
     {
         new BingGroundingToolDefinition(
@@ -90,7 +92,7 @@ app.MapPost("/api/chat", (ChatRequest req) =>
         ThreadRun run = client.Runs.CreateRun(
             thread.Id,
             agent.Id,
-            additionalInstructions: "Please address the user as if you were a public servant. The user has a premium account."
+            additionalInstructions: "For this user message, completely ignore prior answers and immediately perform a fresh Bing grounding search using site:ca.gov plus the user's question. Answer only based on the new search results."
         );
         Console.WriteLine($"[Chat] Run started: ID={run.Id}, status={run.Status}");
 
@@ -114,10 +116,48 @@ app.MapPost("/api/chat", (ChatRequest req) =>
             return Results.Json(new ChatResponse($"⚠️ Agent run failed: {error}"));
         }
 
-        // Fetch all messages in the thread
-        var messages = client.Messages.GetMessages(thread.Id);
+        // ─── RUN DEBUG ───────────────────────────────────────────────
+        Console.WriteLine("──── Run Debug ────");
+        Console.WriteLine($"Instructions: {run.Instructions}");
+        Console.WriteLine($"Tools: {string.Join(", ", run.Tools.Select(t => t.GetType().Name))}");
+        Console.WriteLine($"RequiredActions: {string.Join(", ", run.RequiredActions.Select(a => a.GetType().Name))}");
+        if (run.Usage != null)
+        {
+            Console.WriteLine($"Usage: PromptTokens={run.Usage.PromptTokens}, CompletionTokens={run.Usage.CompletionTokens}");
+        }
+        Console.WriteLine("───────────────────");
 
-        // Extract only the last agent text response
+
+        // 7d. Fetch all messages in the thread
+        var messages = client.Messages.GetMessages(thread.Id)
+            .OrderBy(m => m.CreatedAt)
+            .ToList();
+
+        // ─── FULL DETAILED HISTORY DUMP ─────────────────────────────────
+        Console.WriteLine("──── Full conversation history ────");
+        foreach (var msg in messages)
+        {
+            Console.WriteLine($"[{msg.CreatedAt:u}] [{msg.Role}]");
+            foreach (var content in msg.ContentItems)
+            {
+                if (content is MessageTextContent txt)
+                {
+                    Console.WriteLine($"   • Text      : {txt.Text}");
+                }
+                else if (content is MessageImageFileContent img)
+                {
+                    Console.WriteLine($"   • ImageFile : FileId={img.FileId}");
+                }
+                else
+                {
+                    Console.WriteLine($"   • [Other content type: {content.GetType().Name}]");
+                }
+            }
+            Console.WriteLine();
+        }
+        Console.WriteLine("───────────────────────────────────");
+
+        // 7e. Extract only the last agent text response
         var agentTexts = messages
             .Where(m => m.Role == MessageRole.Agent)
             .SelectMany(m => m.ContentItems)

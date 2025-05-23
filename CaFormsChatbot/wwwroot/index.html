@@ -3,134 +3,207 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>Agent Code-Interpreter Chat</title>
+  <title>CA.gov Services Chatbot</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background: #f7f7f7;
-      margin: 0
+    :root {
+      --bg-page: #f4f6f8;
+      --bg-chat: #ffffff;
+      --color-header: #005b9a;
+      --color-user: #0071bc;
+      --color-bot: #e5e5ea;
+      --text-user: #ffffff;
+      --text-bot: #333333;
+      --font: 'Open Sans', Arial, sans-serif;
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg-page); }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--color-header);
+      color: #ffffff;
+      padding: 0.75rem 1rem;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+    }
+    header img.logo { height: 36px; }
+    header h1 { font-size: 1.25rem; font-weight: 600; }
+
+    .container {
+      max-width: 800px;
+      margin: 4rem auto 0 auto;
+      padding: 0 1rem;
     }
 
     #chat {
-      max-width: 600px;
-      margin: 2rem auto;
+      background: var(--bg-chat);
+      border: 1px solid #d8dde6;
+      border-radius: 6px;
+      padding: 1rem;
+      height: calc(100vh - 14rem);
       overflow-y: auto;
-      height: 80vh;
-      padding: 0 1rem
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
 
     .msg {
-      padding: 0.75rem;
-      border-radius: 8px;
-      margin: 0.5rem 0;
-      max-width: 80%;
-      word-wrap: break-word
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      animation: fadeIn 0.2s ease-in;
     }
-
-    .user {
-      background: #d0f0fd;
-      margin-left: auto;
-      text-align: right
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .msg.user .bubble {
+      align-self: flex-end;
+      background: var(--color-user);
+      color: var(--text-user);
     }
-
-    .bot {
-      background: #fff;
-      text-align: left
+    .msg.bot .bubble {
+      align-self: flex-start;
+      background: var(--color-bot);
+      color: var(--text-bot);
+    }
+    .bubble {
+      max-width: 85%;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      line-height: 1.4;
+      position: relative;
+      border: 1px solid #d8dde6;
+    }
+    .bubble::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 0;
+    }
+    .msg.user .bubble::after {
+      border-left: 8px solid var(--color-user);
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      right: -8px;
+      top: 10px;
+    }
+    .msg.bot .bubble::after {
+      border-right: 8px solid var(--color-bot);
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      left: -8px;
+      top: 10px;
+    }
+    .timestamp {
+      font-size: 0.75rem;
+      color: #777;
+      text-align: right;
     }
 
     #loader {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #0078d4;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      animation: spin 1s linear infinite;
       display: none;
-      margin: 1rem auto;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
     }
 
     #bar {
       display: flex;
       gap: 0.5rem;
       padding: 1rem;
-      background: #fff;
+      background: var(--bg-chat);
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      max-width: 600px;
-      margin: 0 auto
+      bottom: 0; left: 0; right: 0;
+      max-width: 800px;
+      margin: 0 auto;
+      border-top: 1px solid #d8dde6;
+      z-index: 100;
     }
-
     #bar input {
       flex: 1;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 4px
+      padding: 0.75rem;
+      border: 1px solid #d8dde6;
+      border-radius: 4px;
+      font-size: 1rem;
     }
-
     #bar button {
-      padding: 0.5rem 1rem;
-      background: #0078d4;
+      padding: 0.75rem 1.5rem;
+      background: var(--color-header);
       color: #fff;
       border: none;
       border-radius: 4px;
-      cursor: pointer
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    #bar button:disabled { background: #aaa; cursor: default; }
+
+    .welcome {
+      text-align: center;
+      color: #777;
+      margin-top: 2rem;
+      font-size: 1rem;
     }
 
-    #bar button:disabled {
-      background: #aaa;
-      cursor: default
+    .thinking {
+      font-style: italic;
+      opacity: 0.7;
     }
   </style>
 </head>
 
 <body>
-  <div id="chat"></div>
-  <div id="loader" class="loader"></div>
-  <div id="bar">
-    <input id="question" placeholder="Type your question..." />
-    <button id="send">Send</button>
+  <header>
+    <img src="/assets/logo.png" alt="California State Services Chatbot - Let me Bing that for you!" class="logo" />
+    <h1>California State Services Chatbot - Let me Bing that for you!</h1>
+  </header>
+  <div class="container">
+    <div id="chat">
+      <div class="welcome">Ask me anything about California services and forms…</div>
+    </div>
+    <div id="bar">
+      <input id="question" placeholder="Type your question…" />
+      <button id="send">Send</button>
+    </div>
   </div>
+
   <script>
     let threadId = null;
     const chat = document.getElementById("chat");
-    const loader = document.getElementById("loader");
     const input = document.getElementById("question");
     const send = document.getElementById("send");
-
-    // Remove Foundry citation tokens like 
-    function stripSources(text) {
-      return text.replace(/【.*?†source】/g, "");
-    }
-
-    // Convert Markdown links [label](url) into <a> tags
+    function stripSources(text) { return text.replace(/【.*?†source】/g, ""); }
     function parseMarkdownLinks(text) {
-      return text.replace(
-        /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
-        (match, label, url) =>
-          `<a href="${url}" target="_blank" rel="noopener">${label}</a>`
-      );
+      return text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+        (m, label, url) => `<a href="${url}" target="_blank">${label}</a>`);
+    }
+    function timestamp() {
+      const d = new Date();
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    // Shared send function
     async function doSend() {
       const q = input.value.trim();
       if (!q) return;
-      chat.innerHTML += `<div class="msg user">${q}</div>`;
+      const welcome = document.querySelector('.welcome'); if (welcome) welcome.remove();
+
+      // User message
+      chat.innerHTML += `
+        <div class="msg user">
+          <div class="bubble">${q}</div>
+          <div class="timestamp">${timestamp()}</div>
+        </div>`;
+      // Auto-scroll
+      chat.scrollTop = chat.scrollHeight;
+
       input.value = "";
       send.disabled = true;
-      loader.style.display = "block";
+
+      // Thinking indicator
+      const thinkingEl = document.createElement('div');
+      thinkingEl.className = 'msg bot thinking';
+      thinkingEl.innerHTML = `
+        <div class="bubble">Thinking...</div>
+        <div class="timestamp">${timestamp()}</div>`;
+      chat.appendChild(thinkingEl);
+      chat.scrollTop = chat.scrollHeight;
 
       let res;
       try {
@@ -140,35 +213,41 @@
           body: JSON.stringify({ question: q, threadId })
         });
       } catch (e) {
-        loader.style.display = "none";
+        chat.removeChild(thinkingEl);
+        chat.innerHTML += `
+          <div class="msg bot">
+            <div class="bubble">⚠️ Network error: ${e.message}</div>
+            <div class="timestamp">${timestamp()}</div>
+          </div>`;
         send.disabled = false;
-        chat.innerHTML += `<div class="msg bot">⚠️ Network error: ${e.message}</div>`;
+        chat.scrollTop = chat.scrollHeight;
         return;
       }
-
-      loader.style.display = "none";
-      send.disabled = false;
 
       const { reply, threadId: tid } = await res.json();
       threadId = tid;
 
-      // Clean up the reply: strip citations, parse links, then line breaks
+      // Remove thinking
+      chat.removeChild(thinkingEl);
+      send.disabled = false;
+
       let clean = stripSources(reply);
       clean = parseMarkdownLinks(clean);
       clean = clean.replace(/\n/g, "<br>");
 
-      chat.innerHTML += `<div class="msg bot">${clean}</div>`;
+      // Bot message
+      chat.innerHTML += `
+        <div class="msg bot">
+          <div class="bubble">${clean}</div>
+          <div class="timestamp">${timestamp()}</div>
+        </div>`;
       chat.scrollTop = chat.scrollHeight;
     }
 
-    // Click handler
     send.addEventListener("click", doSend);
-
-    // Enter key handler on input
-    input.addEventListener("keydown", (e) => {
+    input.addEventListener("keydown", e => {
       if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();  // prevent newline
-        doSend();
+        e.preventDefault(); doSend();
       }
     });
   </script>
