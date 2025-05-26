@@ -5,13 +5,20 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
-public class AdvicePlugin
+public sealed class AdvicePlugin
 {
     private readonly HttpClient _http = new();
 
-    [KernelFunction, Description("Provide advice based on input")]
-    public Task<string> GetAdviceAsync(string input)
+    [KernelFunction, Description("Get a short piece of random advice")]
+    public async Task<string> GetAdvice()
     {
-        return Task.FromResult($"Advice for {input}: Stay positive and keep learning!");
+        var dto = await _http.GetFromJsonAsync<AdviceDto>(
+                      "https://api.adviceslip.com/advice")
+                  ?? throw new Exception("No data");
+
+        return $"🗣️ Advice: {dto.slip.advice}";
     }
+
+    private sealed record AdviceDto(Slip slip);
+    private sealed record Slip(string advice);
 }

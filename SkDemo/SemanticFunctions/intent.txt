@@ -1,0 +1,5 @@
+Determine the primary intent of the following citizen inquiry and categorize it into one of the following categories: Driver's License, Public Works, Property Tax, Other.
+
+Citizen Inquiry: {{$inquiry}}
+
+Intent:

@@ -43,7 +43,7 @@ var mcpClient = await McpClientFactory.CreateAsync(
     })
 );
 
-// Retrieve the list of tools from the MCP server
+// Retrieve the list of tools and prompts from the MCP server
 var toolsList = await mcpClient.ListToolsAsync().ConfigureAwait(false);
 Console.WriteLine("Available Tools:");
 
@@ -51,7 +51,14 @@ foreach (var toolInfo in toolsList)
 {
     Console.WriteLine($"{toolInfo.Name}: {toolInfo.Description}");
 }
-
+Console.WriteLine("***********************************************************");
+var promptsList = await mcpClient.ListPromptsAsync().ConfigureAwait(false);
+Console.WriteLine("\nAvailable Prompts:");
+foreach (var promptInfo in promptsList)
+{
+    Console.WriteLine($"{promptInfo.Name}: {promptInfo.Description}");
+}
+Console.WriteLine("***********************************************************");
 
 // Convert MCP tools to SK functions and register them as a plugin
 var kernelFunctions = toolsList.Select(tool => tool.AsKernelFunction());

@@ -50,6 +50,28 @@ public class KernelSetupService
             kernel.Plugins.AddFromType<HolidayPlugin>();
         }
 
+        // 4. Register semantic functions
+        var promptFile = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "SemanticFunctions",
+            "summarize.txt");
+        var promptTemplate = File.ReadAllText(promptFile);
+
+        var summarizeFunc = kernel.CreateFunctionFromPrompt(
+            promptTemplate,
+            executionSettings: new OpenAIPromptExecutionSettings
+            {
+                MaxTokens             = 200,
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+            },
+            functionName:    "summarize",
+            description:     "Summarize the given text into a concise paragraph"
+        );
+
+        var summarizePlugin = KernelPluginFactory.CreateFromFunctions("SummarizePlugin", new[] { summarizeFunc });
+        kernel.Plugins.Add(summarizePlugin);
+
+
         this.Kernel = kernel;
     }
 }
