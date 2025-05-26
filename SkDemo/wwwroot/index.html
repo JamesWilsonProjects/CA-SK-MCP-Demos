@@ -163,7 +163,7 @@
       chat.scrollTop = chat.scrollHeight;
 
       try {
-        const res = await fetch("/ask", {
+        const res = await fetch("/api/chat/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ question: q })

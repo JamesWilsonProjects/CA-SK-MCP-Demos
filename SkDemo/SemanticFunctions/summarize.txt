@@ -1,0 +1,3 @@
+{{input}}
+
+<instructions>: Summarize the text above in one clear sentence.

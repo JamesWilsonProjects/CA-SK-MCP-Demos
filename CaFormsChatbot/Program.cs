@@ -63,6 +63,9 @@ var app = builder.Build();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+// Ensure default files like index.html are served
+app.UseDefaultFiles();
+
 // 6. Cleanup: delete agent on shutdown
 app.Lifetime.ApplicationStopping.Register(() =>
 {
