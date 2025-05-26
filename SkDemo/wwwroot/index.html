@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>SkDemo Chatbot</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap">
+  <style>
+    :root {
+      --color-primary-blue: #005b9a;
+      --color-dark-blue: #003e73;
+      --color-light-blue: #e0f2f7;
+      --color-gray-bg: #f4f6f8;
+      --color-text-dark: #333333;
+      --color-text-light: #ffffff;
+      --color-border: #d8dde6;
+    }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: var(--color-gray-bg);
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 80vh;
+      height: 80vh;           /* ← new: make container 80% of viewport height */
+      background: var(--color-light-blue);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      background: var(--color-primary-blue);
+      color: var(--color-text-light);
+      padding: 12px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    #chat {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+    }
+
+    .msg {
+      margin-bottom: 8px;
+      display: flex;
+    }
+
+    .msg.user {
+      justify-content: flex-end;
+    }
+
+    .msg.bot {
+      justify-content: flex-start;
+    }
+
+    .bubble {
+      max-width: 80%;
+      padding: 8px 12px;
+      border-radius: 16px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .msg.user .bubble {
+      background: var(--color-primary-blue);
+      color: var(--color-text-light);
+      border-bottom-right-radius: 0;
+    }
+
+    .msg.bot .bubble {
+      background: var(--color-text-light);
+      color: var(--color-text-dark);
+      border-bottom-left-radius: 0;
+      border: 1px solid var(--color-border);
+    }
+
+    .timestamp {
+      font-size: 0.7rem;
+      color: #666;
+      margin-left: 6px;
+      align-self: flex-end;
+    }
+
+    form {
+      display: flex;
+      border-top: 1px solid var(--color-border);
+    }
+
+    #question {
+      flex: 1;
+      border: none;
+      padding: 12px;
+      font-size: 1rem;
+    }
+
+    #question:focus {
+      outline: none;
+    }
+
+    #send {
+      background: var(--color-dark-blue);
+      color: var(--color-text-light);
+      border: none;
+      padding: 0 16px;
+      cursor: pointer;
+    }
+
+    #send:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>SkDemo Chatbot</header>
+    <div id="chat">
+      <div class="welcome">Ask me anything...</div>
+    </div>
+    <form onsubmit="return false;">
+      <input id="question" type="text" placeholder="Type your message…" autocomplete="off" />
+      <button id="send">Send</button>
+    </form>
+  </div>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("question");
+    const send = document.getElementById("send");
+
+    async function doSend() {
+      const q = input.value.trim();
+      if (!q) return;
+      const welcome = document.querySelector('.welcome');
+      if (welcome) welcome.remove();
+
+      // Display user message
+      chat.innerHTML += `
+        <div class="msg user">
+          <div class="bubble">${q}</div>
+        </div>`;
+      input.value = "";
+      send.disabled = true;
+
+      // Show thinking indicator
+      const thinkingEl = document.createElement('div');
+      thinkingEl.className = 'msg bot';
+      thinkingEl.innerHTML = `<div class="bubble">Thinking...</div>`;
+      chat.appendChild(thinkingEl);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const res = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: q })
+        });
+
+        const { reply } = await res.json();
+
+        // Remove thinking indicator
+        chat.removeChild(thinkingEl);
+        send.disabled = false;
+
+        // Render bot reply
+        chat.innerHTML += `
+          <div class="msg bot">
+            <div class="bubble">${reply}</div>
+            <div class="timestamp">${new Date().toLocaleTimeString()}</div>
+          </div>`;
+
+        // Auto-scroll
+        chat.scrollTop = chat.scrollHeight;
+      } catch (e) {
+        // Remove thinking and show error
+        chat.removeChild(thinkingEl);
+        chat.innerHTML += `
+          <div class="msg bot">
+            <div class="bubble">⚠️ Error: ${e.message}</div>
+          </div>`;
+        send.disabled = false;
+      }
+    }
+
+    send.addEventListener("click", doSend);
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        doSend();
+      }
+    });
+  </script>
+</body>
+
+</html>

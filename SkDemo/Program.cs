@@ -1,9 +1,22 @@
-﻿using Microsoft.SemanticKernel;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using System.Net.Http.Json;
 using System.ComponentModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://localhost:5002");
+var app = builder.Build();
+
+// Define a simple route
+app.MapGet("/", () => "Welcome to the SkDemo Web App!");
+
+// Serve static files if needed
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true)
@@ -15,14 +28,14 @@ string chatDeployment = config["AzureOpenAI:Deployment"]!;
 
 
 // 1. Builder + LLM
-var builder = Kernel.CreateBuilder()
+var kernelBuilder = Kernel.CreateBuilder()
     .AddAzureOpenAIChatCompletion(
         chatDeployment,
         endpoint,
         apiKey);
 
 // 2. Build kernel
-var kernel = builder.Build();
+var kernel = kernelBuilder.Build();
 
 // 3. Register plugins
 kernel.Plugins.AddFromType<AdvicePlugin>();
@@ -38,12 +51,11 @@ call IsPublicHoliday; if a todo, call AddTask.
 
 
 // 4. Chat loop
-while (true)
+app.MapPost("/ask", async (ChatRequest request) =>
 {
-    Console.Write("You: ");
-    var input = Console.ReadLine();
-    if (string.IsNullOrWhiteSpace(input) || input.Equals("exit", StringComparison.OrdinalIgnoreCase))
-        break;
+    var input = request.Question;
+    if (string.IsNullOrWhiteSpace(input))
+        return Results.BadRequest("Question cannot be empty.");
 
     var reply = await kernel.InvokePromptAsync(
         $"{systemPrompt}\nUser: {input}",
@@ -51,8 +63,20 @@ while (true)
         {
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
         }));
-    Console.WriteLine("Assistant: " + reply.GetValue<string>());
-}
+
+    var replyText = reply.GetValue<string>();
+    Console.WriteLine($"[Debug] Reply from kernel: {replyText}");
+
+    // return a JSON object with reply (and, if you want, a threadId)
+    return Results.Ok(new
+    {
+      reply = replyText,
+      threadId = Guid.NewGuid().ToString()  // or null, or your own conversation ID
+    });
+});
+
+// Run the web app
+app.Run();
 
 // -------------------- Plugins --------------------
 
@@ -85,6 +109,40 @@ public class TodoPlugin
         _tasks.Add(text);
         return $"✅ Added: {text}";
     }
+
+    [KernelFunction, Description("Get all tasks from the in-memory list")]
+    public string GetTasks()
+    {
+        if (_tasks.Count == 0)
+            return "📝 No tasks found.";
+            
+        var tasks = string.Join("\n", _tasks.Select(t => $"• {t}"));
+        return $"📝 Tasks:\n{tasks}";
+    }
+
+    [KernelFunction, Description("Remove a task from the in-memory list")]
+    public string RemoveTask(
+        [Description("Task text to remove, e.g., renew tabs")] string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return "❌ Task text cannot be empty.";
+
+        // Try exact match first
+        if (_tasks.Remove(text))
+            return $"🗑️ Removed: {text}";
+
+        // Try partial match (case-insensitive)
+        var matchingTask = _tasks.FirstOrDefault(t => 
+            t.Contains(text, StringComparison.OrdinalIgnoreCase));
+        
+        if (matchingTask != null)
+        {
+            _tasks.Remove(matchingTask);
+            return $"🗑️ Removed: {matchingTask}";
+        }
+
+        return $"❌ Task not found: {text}";
+    }
 }
 
 public class HolidayPlugin
@@ -107,4 +165,9 @@ public class HolidayPlugin
             : $"🎉 {date} is {hit.LocalName} ({hit.Name}).";
     }
     private record NagerDto(string Date, string LocalName, string Name);
+}
+
+public class ChatRequest
+{
+    public string Question { get; set; } = string.Empty;
 }
