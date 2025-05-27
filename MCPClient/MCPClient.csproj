@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- suppress any specific SK warnings -->
+    <NoWarn>SKEXP0001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Configuration packages -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.5" />
+
+    <!-- Semantic Kernel – all pinned to the same 1.50.0 series -->
+    <PackageReference Include="Microsoft.SemanticKernel"                Version="1.50.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI"      Version="1.50.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.50.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" Version="1.50.0" />
+
+    <!-- Memory plugin (alpha) -->
+    <PackageReference Include="Microsoft.SemanticKernel.Plugins.Memory" Version="1.51.0-alpha" />
+
+    <!-- Your MCP protocol client -->
+    <PackageReference Include="ModelContextProtocol" Version="0.1.0-preview.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
