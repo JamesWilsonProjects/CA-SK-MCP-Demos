@@ -1,6 +1,6 @@
 # California State Developer Talk Demos
 
-This repository contains demos for the California State Developer Talk on Semantic Kernel and Model Context Protocol. These demos showcase the integration of advanced AI capabilities into applications using Azure OpenAI and Semantic Kernel.
+This repository contains demos for the California State Developer Talk on Semantic Kernel and Model Context Protocol. These demos showcase the integration of advanced AI capabilities into applications using Azure OpenAI and Semantic Kernel. They are part of the presentation outlined in the accompanying PowerPoint file: `CA-AgenticAI-SK-and-MCP.pptx`.
 
 ## Getting Started
 
