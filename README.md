@@ -63,8 +63,9 @@ This demo showcases the integration of the MCPClient with the MCPInfoServer and 
 2. Update the `appsettings.Development.json` file:
    - Rename `appsettings.Development.template.json` to `appsettings.Development.json` if not already done.
    - Add your Azure OpenAI settings (`Endpoint`, `Key`, `Deployment`, and `ModelId`).
-   - Specify the connection details for the `MCPInfoServer` and `MCPClassificationServer`.
-3. Build and run the `MCPClient` project using your preferred IDE or the .NET CLI. The client will automatically start the `MCPInfoServer` and `MCPClassificationServer` as needed.
+   - Specify the paths to the executables for the `MCPInfoServer` and `MCPClassificationServer` in the configuration file.
+3. Build the `MCPInfoServer` and `MCPClassificationServer` projects to ensure their executables are created.
+4. Build and run the `MCPClient` project using your preferred IDE or the .NET CLI. The client will automatically start the `MCPInfoServer` and `MCPClassificationServer` as needed.
 
 ---
 
