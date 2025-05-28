@@ -4,12 +4,6 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkDemo", "SkDemo\SkDemo.csproj", "{703C3DD9-2C76-4CBF-9472-236A2DE8DD06}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkDemoInquiry", "SkDemoInquiry\SkDemoInquiry.csproj", "{92A009FB-85C6-4ED9-B0CE-9C89E8CD9B46}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McpOfficeInfoServer", "McpOfficeInfoServer\McpOfficeInfoServer.csproj", "{6DCCC3F4-920A-4FE8-8996-CC58D5A918FD}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McpOfficeInfoClient", "McpOfficeInfoClient\McpOfficeInfoClient.csproj", "{00369517-0385-4FB8-803E-67B277762073}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCPClient", "MCPClient\MCPClient.csproj", "{F93DC95A-4CF1-4615-91AA-802D6B3E5B77}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCPClassificationServer", "MCPClassificationServer\MCPClassificationServer.csproj", "{503A75C1-14A6-4E6B-B652-A2A11CDE4AB1}"
@@ -29,18 +23,6 @@ Global
 		{703C3DD9-2C76-4CBF-9472-236A2DE8DD06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{703C3DD9-2C76-4CBF-9472-236A2DE8DD06}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{703C3DD9-2C76-4CBF-9472-236A2DE8DD06}.Release|Any CPU.Build.0 = Release|Any CPU
-		{92A009FB-85C6-4ED9-B0CE-9C89E8CD9B46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{92A009FB-85C6-4ED9-B0CE-9C89E8CD9B46}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{92A009FB-85C6-4ED9-B0CE-9C89E8CD9B46}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{92A009FB-85C6-4ED9-B0CE-9C89E8CD9B46}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6DCCC3F4-920A-4FE8-8996-CC58D5A918FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6DCCC3F4-920A-4FE8-8996-CC58D5A918FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6DCCC3F4-920A-4FE8-8996-CC58D5A918FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6DCCC3F4-920A-4FE8-8996-CC58D5A918FD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{00369517-0385-4FB8-803E-67B277762073}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{00369517-0385-4FB8-803E-67B277762073}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{00369517-0385-4FB8-803E-67B277762073}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{00369517-0385-4FB8-803E-67B277762073}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F93DC95A-4CF1-4615-91AA-802D6B3E5B77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F93DC95A-4CF1-4615-91AA-802D6B3E5B77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F93DC95A-4CF1-4615-91AA-802D6B3E5B77}.Release|Any CPU.ActiveCfg = Release|Any CPU
