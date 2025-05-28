@@ -98,7 +98,7 @@ Feel free to experiment with this prompt to see how it changes the chatbot's res
    - Add your Azure settings:
      - `ProjectEndpoint`
      - `ModelDeploymentName`
-     - `BingConnectionId` (Refer to [Azure Documentation](https://learn.microsoft.com/en-us/azure/cognitive-services/bing-search/create-bing-search-resource) for instructions on creating a Bing Search resource in Azure.)
+     - `BingConnectionId` (Refer to [Create a Bing Search resource in Azure](https://learn.microsoft.com/en-us/azure/ai-services/agents/how-to/tools/bing-grounding) for instructions.)
 3. Build and run the project using your preferred IDE or the .NET CLI.
 
 #### Example Questions
